@@ -6,7 +6,7 @@ These projects were completed to reinforce knowledge in the following areas: Sup
 
 The capstone project was started and completed from scratch, by myself. For the other projects, skeleton code and helpful prompts were provided by the team at Udacity, in order to assist the development process.
 
-**Capstone Project - Facial Expression Classifier **
+**Capstone Project - Facial Expression Classifier**
 
 -Built a convolutional neural network architecture in Keras to process images of faces, and classify the facial expression of the person into one of the following categories: fearful, happy, sad, digusted, angry, neutral, surprised.
 -Trained various CNN architectures on GPU-compute servers with Amazon Web Services.
