@@ -8,10 +8,10 @@ The capstone project was started and completed from scratch, by myself. For the 
 
 **Capstone Project - Facial Expression Classifier**
 
--Built a convolutional neural network architecture in Keras to process images of faces, and classify the facial expression of the person into one of the following categories: fearful, happy, sad, digusted, angry, neutral, surprised.
--Trained various CNN architectures on GPU-compute servers with Amazon Web Services.
--Produced visualizations of the training process
--Compiled the process and findings of this project into an academic style report
+-Built a convolutional neural network architecture in Keras to process images of faces, and classify the facial expression of the person into one of the following categories: fearful, happy, sad, digusted, angry, neutral, surprised.<br>
+-Trained various CNN architectures on GPU-compute servers with Amazon Web Services.<br>
+-Produced visualizations of the training process<br>
+-Compiled the process and findings of this project into an academic style report<br>
 
 **Supervised Learning - Prediction of Housing Prices in Boston**
 	
