@@ -4,9 +4,16 @@ A collection of projects completed as part of the coursework for Udacity's Machi
 
 These projects were completed to reinforce knowledge in the following areas: Supervised Learning, Unsupervised Learning, Reinforcement Learning and Deep Learning
 
-Descriptions of each of the projects, for each section, are detailed below:
+The capstone project was started and completed from scratch, by myself. For the other projects, skeleton code and helpful prompts were provided by the team at Udacity, in order to assist the development process.
 
-**Supervised Learning - Predicition of Housing Prices in Boston**
+**Capstone Project - Facial Expression Classifier **
+
+-Built a convolutional neural network architecture in Keras to process images of faces, and classify the facial expression of the person into one of the following categories: fearful, happy, sad, digusted, angry, neutral, surprised.
+-Trained various CNN architectures on GPU-compute servers with Amazon Web Services.
+-Produced visualizations of the training process
+-Compiled the process and findings of this project into an academic style report
+
+**Supervised Learning - Prediction of Housing Prices in Boston**
 	
 -Utilized historical housing data from Boston to predict prices of unknown houses<br>
 -Made use of linear regression to draw relationships between house and neighbourhood characteristics
