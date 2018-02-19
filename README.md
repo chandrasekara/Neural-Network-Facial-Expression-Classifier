@@ -2,34 +2,8 @@
 
 A collection of projects completed as part of the coursework for Udacity's Machine Learning Engineer Nanodegree. 
 
-These projects were completed to reinforce knowledge in the following areas: Supervised Learning, Unsupervised Learning, Reinforcement Learning and Deep Learning
+The 'guided' folder contains a collection of projects that were completed by using skeleton code provided by Udacity. This code often simplified the process of completing tasks such as importing of data, pre-processing and evaluation. I completed sections of the code as prescribed by Udacity, to build knowledge of machine learning tools in a particular area. These areas include, Supervised Learning, Unsupervised Learning, Reinforcement Learning and Deep Learning. These projects were built in Python 2.
 
-The capstone project was started and completed from scratch, by myself. For the other projects, skeleton code and helpful prompts were provided by the team at Udacity, in order to assist the development process.
+The 'capstone' folder contains a project completed completely from scratch by myself, and was completed to demonstrate the level of machine learning skill I had developed throughout the course. This project was built using Python 3.
 
-**Capstone Project - Facial Expression Classifier**
-
--Built a convolutional neural network architecture in Keras to process images of faces, and classify the facial expression of the person into one of the following categories: fearful, happy, sad, digusted, angry, neutral, surprised.<br>
--Trained various CNN architectures on GPU-compute servers with Amazon Web Services.<br>
--Produced visualizations of the training process<br>
--Compiled the process and findings of this project into an academic style report<br>
-
-**Supervised Learning - Prediction of Housing Prices in Boston**
-	
--Utilized historical housing data from Boston to predict prices of unknown houses<br>
--Made use of linear regression to draw relationships between house and neighbourhood characteristics
-
-**Unsupervised Learning - Identifying Customer Segments for a Wholesale Distributor**
-	
--Used clustering algorithms to split the large dataset into different segments, corresponding to different customer types<br>
--Investigated use of Principal Component Analysis to aid with performance of clustering algorithms and for visualization purposes
-
-**Reinforcement Learning - Training a Self Driving Car in a Simulation**
-
--Investigated use of Q-learning to train a smartcab to drive safely and optimally in a simulation
-
-**Deep Learning - Dog Breed Classifier**
-
--Utilized convolutional neural networks to recognize different dog breeds in images<br>
--Investigated the performance of many different architectures in Keras, using GPU acceleration to speed up training time<br>
--Utilized transfer learning by making use of pre-trained networks, such as the VGG16 and Resnet-50 models
-
+The majority of code for each of the projects exists within Jupyter notebooks. In order to run the code, Jupyter must first be installed. This can be done by [installing Anaconda](https://www.anaconda.com/download/) (recommended) or through pip by using: `pip3 install jupyter`
