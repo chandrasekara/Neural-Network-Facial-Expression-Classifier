@@ -55,12 +55,10 @@ if use_section_data:
     if smaller_section_data:
         data = pd.read_csv("smaller_section_fer2013.csv")
 else:
-    data = pd.read_csv("fer2013cp.csv")
+    data = pd.read_csv("fer2013.csv")
 
 # Create separate data structures for the labels and the features    
-
 labels = data['emotion']
-
 features = data.drop(['emotion','Usage'], axis=1, inplace=False)
 
 
@@ -74,15 +72,13 @@ features = data.drop(['emotion','Usage'], axis=1, inplace=False)
 
 # In[4]:
 
-temp_list = []
-
+list_of_pixels = []
 # Extract the pixel values for each image in the .csv file and put them into a list
 for i in features['pixels']:
-    temp_list.append(i.split())
-    
-features.drop('pixels',axis=1,inplace=True)
+    list_of_pixels.append(i.split())
 
-features['pixels'] = pd.Series(temp_list)
+features.drop('pixels',axis=1,inplace=True)
+features['pixels'] = pd.Series(list_of_pixels)
 
 
 # Of all of the data that has been imported, 20% will be used for training, 10% for validation, and 70% for training.
@@ -93,48 +89,39 @@ from sklearn.model_selection import train_test_split
 
 # Split the total data into three sections: 80% training, 10% validation, and 20% testing
 X_train, X_test, y_train, y_test = train_test_split(features,labels,test_size = 0.2, random_state=0)
-
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size = 0.125, random_state=0)
 
 
 # In[6]:
 
-def df_to_tensor(X_in, im_dim, reshape=True, triple_channels=False, horizontal_flip_double=False):
+def df_to_nparray(df_in, im_dim, reshape=True, triple_channels=False, horizontal_flip_double=False):
     
     # Convert a dataframe into a numpy array, suitably shaped for input to a CNN
-    
-    list_of_2d_arrays = []  
-    
-    for image in X_in['pixels']:
+    list_of_pixel_arrays = []  
+    for image in df_in['pixels']:
         pixel_array = []
-        
         for pixel in image:
             if not triple_channels:
                 pixel_array.append(int(pixel))
             else:
                 pixel_array.append([int(pixel),int(pixel),int(pixel)])
-        
         # Organize the pixel values into a 2D array, of size length x width
         pixel_array = [pixel_array[x:x+im_dim] for x in range(0,len(pixel_array),im_dim)]
+        list_of_pixel_arrays.append(pixel_array)
         
-        list_of_2d_arrays.append(pixel_array)
-        
-    # Add in a copy of the image that is flipped horizontally
     if horizontal_flip_double == True:
-        
+        # Add in a copy of the image that is flipped horizontally
         reversed_array = []
-        
         for pixel_row in pixel_array:
             reversed_array.append(pixel_row[::-1])
-            
-        list_of_2d_arrays.append(reversed_array)
-            
-    np_arr =  np.array(list_of_2d_arrays)
-
+        list_of_pixel_arrays.append(reversed_array)
+    np_array =  np.array(list_of_pixel_arrays)
+    
+    # Add an extra dimension for individual pixels, if needed to satisfy shape requirements for a model
     if reshape:
-        return np_arr.reshape(np_arr.shape[0], 48, 48, 1)
+        return np_array.reshape(np_array.shape[0], 48, 48, 1)
     else:
-        return np_arr
+        return np_array
 
 
 # ### Sample Visualization
@@ -144,22 +131,15 @@ def df_to_tensor(X_in, im_dim, reshape=True, triple_channels=False, horizontal_f
 # In[7]:
 
 # Take a few sample images to provide a visualization
-
-samples = df_to_tensor(features,48)
+samples = df_to_nparray(features,48)
 
 
 # In[8]:
 
 seed_number = 21
-
-two_d_array = samples[seed_number].reshape(48,48)
-
 fig = plt.figure(figsize=(10, 10))
-
 num_rows = 3
-
 num_columns = 3
-
 hardcoded_labels = ["Fear", "Anger", "Anger", "Happy", "Happy",
                    "Happy", "Disgust", "Happy", "Surprised"]
 
@@ -176,32 +156,25 @@ for i in range(num_rows*num_columns):
 # In[9]:
 
 frequency_list = np.zeros(7)
-
 for label in labels:
     frequency_list[int(label)] += 1
     
+# Parse the numbers that correspond to different emotions in the dataset
 emotion_indices = range(1,8)
-
-x_axis_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise',
-         'Neutral']
-
+x_axis_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise', 'Neutral']
 
 bar = plt.bar(emotion_indices, frequency_list, align='center')
-
 plt.xticks(emotion_indices, x_axis_labels )
-
 plt.xlabel("Facial Expression")
-
 plt.ylabel("Frequency of Occurence")
-
 plt.show()
 
 
 # In[10]:
 
-train_tensors = df_to_tensor(X_train,48).astype('float32')/255
-valid_tensors = df_to_tensor(X_val,48).astype('float32')/255
-test_tensors = df_to_tensor(X_test,48).astype('float32')/255
+train_tensors = df_to_nparray(X_train,48).astype('float32')/255
+valid_tensors = df_to_nparray(X_val,48).astype('float32')/255
+test_tensors = df_to_nparray(X_test,48).astype('float32')/255
 
 train_targets = np.array(pd.get_dummies(y_train))
 valid_targets = np.array(pd.get_dummies(y_val))
@@ -210,6 +183,7 @@ test_targets = np.array(pd.get_dummies(y_test))
 
 # In[11]:
 
+# For the fer2013 dataset obtained from Kaggle, each picture is a uniform size of 48x48
 img_width = 48
 img_height = 48
 
@@ -223,21 +197,17 @@ img_height = 48
 
 import numpy as np
 
-def my_categorical_cross_entropy(predictions_vector, targets_vector, epsilon_ = 0.0001):
+def indiv_cce(predictions_vector, targets_vector, epsilon_ = 0.0001):
     
-    # Calculates, for each individual sample, the contribution to the total categorical cross entropy of the predictions with respect to the targets
-    
-    # Replace zero with a small number to allow calculation of log
+    # Calculates, for a single sample, the contribution to the total categorical cross entropy of the predictions with respect to the targets
+    # Replaces zero with a small number to allow calculation of log
     for i in range(len(predictions_vector)):
         if predictions_vector[i] <= 0:
             predictions_vector[i] = epsilon_
-    
     predictions = np.array(predictions_vector)
-
     targets = np.array(targets_vector)
-
     log_vector = -np.log(predictions_vector)
-
+    
     return targets.dot(log_vector)
 
 
@@ -245,14 +215,14 @@ def my_categorical_cross_entropy(predictions_vector, targets_vector, epsilon_ = 
 
 def manual_total_cce(predictions, targets ):
     
+    # Finds the average categorical cross entropy of a set of predictions, using Numpy arrays instead of Tensorflow
     # Predictions and targets inputs must be numpy arrays with the shape: (number of samples, number of classes)
     total = 0
-    
     for i in range(predictions.shape[0]):
         if predictions.shape[0] != targets.shape[0]:
-            print("WRONG INPUT DIMS!")
+            print("WRONG INPUT DIMENSIONS!")
             return None
-        total += my_categorical_cross_entropy(predictions[i], targets[i])
+        total += indiv_cce(predictions[i], targets[i])
     
     return float(total)/predictions.shape[0]
 
@@ -261,6 +231,7 @@ def manual_total_cce(predictions, targets ):
 
 def get_model_predictions(input_model, input_test_tensors):
     
+    # Evaluate what facial expressions the model predicts for each test image
     return [input_model.predict(np.expand_dims(tensor, axis=0)) for tensor in input_test_tensors]
 
 
@@ -269,7 +240,6 @@ def get_model_predictions(input_model, input_test_tensors):
 def get_model_accuracy(input_model, input_test_tensors, input_test_targets):
     
     expression_predictions = [np.argmax(input_model.predict(np.expand_dims(tensor, axis=0))) for tensor in input_test_tensors]
-
     test_accuracy = 100*np.sum(np.array(expression_predictions)==np.argmax(input_test_targets, axis=1))/len(expression_predictions)
     
     return test_accuracy
@@ -277,16 +247,18 @@ def get_model_accuracy(input_model, input_test_tensors, input_test_targets):
 
 # In[16]:
 
-def plot_model_history(history):
+def plot_model_history(history, save_file = None):
     # CODE OBTAINED FROM https://machinelearningmastery.com/display-deep-learning-model-training-history-in-keras/
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
-
     plt.legend(['train', 'validation'], loc='upper left')
-    plt.title('Training and Validation data for Baseline Model')
+    plt.title('Training and Validation data for Model')
     plt.xlabel('Training Epoch')
     plt.ylabel('Cross Entropy Loss')
     plt.show()
+    
+    if save_file is not None:
+        savefig(save_file)
 
 
 # In[17]:
@@ -325,11 +297,9 @@ model_baseline.compile(optimizer='rmsprop', loss='categorical_crossentropy', met
 # In[20]:
 
 epochs = 20
-
 # Only use the model weights in the epoch with the least validation loss
 checkpointer = ModelCheckpoint(filepath='saved_models/weights.best.baseline.hdf5', 
                                verbose=1, save_best_only=True)
-
 history_baseline = model_baseline.fit(train_tensors, train_targets, 
           validation_data=(valid_tensors, valid_targets),
           epochs=epochs, batch_size=20, callbacks=[checkpointer], verbose=1)
@@ -349,16 +319,12 @@ print("Test accuracy: %.4f%% " % get_model_accuracy(model_baseline, test_tensors
 
 #print(history_baseline.history.keys())
 # summarize history for accuracy
-plot_model_history(history_baseline)
-
-
-# In[25]:
-
-predictions_np = get_predictions_tensor(model_baseline, test_tensors)
+plot_model_history(history_baseline, save_file = "baseline.png")
 
 
 # In[26]:
 
+predictions_np = get_predictions_tensor(model_baseline, test_tensors)
 print("Average categorical cross entropy: ", manual_total_cce(predictions_np, test_targets))
 
 
@@ -428,14 +394,10 @@ model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['ac
 # In[31]:
 
 epochs = 50
-
 checkpointer = ModelCheckpoint(filepath='saved_models/weights.best.from_scratch_augmentation.hdf5', 
                                verbose=1, save_best_only=True)
-
 #Training using image augmentation
-
 batch_size = 20
-
 history_advanced = model.fit_generator(datagen_train.flow(train_tensors, train_targets, batch_size=batch_size),
                     steps_per_epoch=train_tensors.shape[0] // batch_size,
                     epochs=epochs, verbose=1, callbacks=[checkpointer],
@@ -464,7 +426,6 @@ plot_model_history(history_advanced)
 # In[36]:
 
 predictions_np = get_predictions_tensor(model, test_tensors)
-
 print("Average categorical cross entropy: ", manual_total_cce(predictions_np, test_targets))
 
 
@@ -475,21 +436,18 @@ print("Average categorical cross entropy: ", manual_total_cce(predictions_np, te
 # In[18]:
 
 # Use the same splits of data for the transfer learning approach
-
 X_train_transf, X_test_transf, X_val_transf = X_train, X_test, X_val
-
 y_train_transf, y_test_transf, y_val_transf = y_train, y_test, y_val
-
-sample = df_to_tensor(X_train_transf, 48, reshape=False)
+sample = df_to_nparray(X_train_transf, 48, reshape=False)
 
 
 # In[19]:
 
 # Creating transfer tensors, which will have a value for each RGB channel
 
-train_tensors_transf = df_to_tensor(X_train_transf,48,reshape=False, triple_channels=True).astype('float32')/255
-valid_tensors_transf = df_to_tensor(X_val_transf,48, reshape=False, triple_channels=True).astype('float32')/255
-test_tensors_transf = df_to_tensor(X_test_transf,48, reshape=False, triple_channels=True).astype('float32')/255
+train_tensors_transf = df_to_nparray(X_train_transf,48,reshape=False, triple_channels=True).astype('float32')/255
+valid_tensors_transf = df_to_nparray(X_val_transf,48, reshape=False, triple_channels=True).astype('float32')/255
+test_tensors_transf = df_to_nparray(X_test_transf,48, reshape=False, triple_channels=True).astype('float32')/255
 
 train_targets_transf = np.array(pd.get_dummies(y_train_transf))
 valid_targets_transf = np.array(pd.get_dummies(y_val_transf))
@@ -501,7 +459,6 @@ test_targets_transf = np.array(pd.get_dummies(y_test_transf))
 img_width, img_height = 48, 48
 batch_size = 16
 epochs = 50
-
 model = applications.VGG19(weights = "imagenet", include_top=False, input_shape = (img_width, img_height, 3))
 
 model.summary()
@@ -530,7 +487,6 @@ datagen_valid_transf.fit(valid_tensors_transf)
 # In[41]:
 
 # Change this code to freeze some of the layers of the VGG-19 model with the pre-trained weights
-
 #for layer in model.layers:
 #    layer.trainable = False
 
@@ -548,10 +504,8 @@ x = Dropout(0.5)(x)
 x = Dense(1024, activation="relu")(x)
 x = Dropout(0.5)(x)
 predictions = Dense(7, activation="softmax")(x)
-
 # creating the final model 
 model_final = Model(input = model.input, output = predictions)
-
 # compile the model 
 model_final.compile(loss = "categorical_crossentropy", optimizer = optimizers.SGD(lr=0.0001, momentum=0.9), metrics=["accuracy"])
 
@@ -562,7 +516,6 @@ model_final.summary()
 
 checkpointer = ModelCheckpoint(filepath='saved_models/weights.best.transfer_example_six.hdf5', 
                                verbose=1, save_best_only=True)
-
 history_transfer = model_final.fit_generator(datagen_train_transf.flow(train_tensors_transf, train_targets_transf, batch_size=batch_size),
                     steps_per_epoch=train_tensors_transf.shape[0] // batch_size,
                     epochs=epochs, verbose=1, callbacks=[checkpointer],
@@ -589,7 +542,6 @@ print('Test accuracy: %.4f%%' % get_model_accuracy(model_final, test_tensors_tra
 # In[47]:
 
 predictions_np = get_predictions_tensor(model_final, test_tensors_transf)
-
 print("Average categorical cross entropy is: ", manual_total_cce(predictions_np, test_targets_transf))
 
 
@@ -613,12 +565,10 @@ def onehot_to_label(one_hot_array, labels_array):
 samples = train_tensors_transf
 seed_number = 0
 print(samples.shape)
-
 fig = plt.figure(figsize=(10, 10))
 num_rows = 3
 num_columns = 3
 labels_words = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
-
 labels = train_targets_transf
 
 for i in range(num_rows*num_columns):
@@ -631,15 +581,14 @@ for i in range(num_rows*num_columns):
 
 def add_noise(samples, number_of_images, std_dev=0.025, seed_number=0):
     
+    # Examine each pixel value
     for i in range(number_of_images):
         for pixel_x in samples[seed_number+i]:
             for pixel_y in range(len(pixel_x)):
                 # Generate random Gaussian noise
                 noise_ = np.random.normal(0,std_dev,1)[0]
                 for rgb_value in range(len(pixel_x[pixel_y])):
-                    
                     pixel_x[pixel_y][rgb_value] += noise_
-                    
                     # Normalize out-of-range values
                     if pixel_x[pixel_y][rgb_value] < 0:
                         pixel_x[pixel_y][rgb_value] = 0
@@ -652,14 +601,11 @@ def add_noise(samples, number_of_images, std_dev=0.025, seed_number=0):
 # In[26]:
 
 # Visualize the effect of adding a small amount of gaussian noise to the samples
-
 samples_noise = np.copy(train_tensors_transf)
-
 fig = plt.figure(figsize=(10, 10))
 
 # Change this value to get varying noise
 noise_std_dev = 0.025
-
 samples_noise = add_noise(samples_noise, num_rows*num_columns, std_dev = noise_std_dev)             
     
 for i in range(num_rows*num_columns):
@@ -671,7 +617,6 @@ for i in range(num_rows*num_columns):
 # In[57]:
 
 # add the gaussian noise to each of the test_tensors_transf
-
 test_tensors_transf_noise = np.copy(test_tensors_transf)
 num_images = test_tensors_transf_noise.shape[0]
 test_tensors_transf_noise = add_noise(test_tensors_transf_noise, num_images, std_dev = noise_std_dev)
@@ -680,7 +625,6 @@ test_tensors_transf_noise = add_noise(test_tensors_transf_noise, num_images, std
 # In[58]:
 
 predictions_np = get_predictions_tensor(model_final, test_tensors_transf_noise)
-
 print("Categorical Cross Entropy Loss with noise added: ", manual_total_cce(predictions_np, test_targets_transf))
 
 
