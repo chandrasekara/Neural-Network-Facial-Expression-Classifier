@@ -37,7 +37,9 @@ from keras import backend as K
 from keras import applications
 from keras import optimizers
 
-get_ipython().magic('matplotlib inline')
+from IPython import get_ipython
+
+#get_ipython().magic('matplotlib inline')
 
 
 # ### Reading the Data
@@ -47,7 +49,7 @@ get_ipython().magic('matplotlib inline')
 # In[3]:
 
 # Allow for use of a section of the dataset to avoid large processing times
-use_section_data = False
+use_section_data = True
 smaller_section_data = False
 
 if use_section_data:
@@ -134,42 +136,6 @@ def df_to_nparray(df_in, im_dim, reshape=True, triple_channels=False, horizontal
 samples = df_to_nparray(features,48)
 
 
-# In[8]:
-
-seed_number = 21
-fig = plt.figure(figsize=(10, 10))
-num_rows = 3
-num_columns = 3
-hardcoded_labels = ["Fear", "Anger", "Anger", "Happy", "Happy",
-                   "Happy", "Disgust", "Happy", "Surprised"]
-
-for i in range(num_rows*num_columns):
-    ax = fig.add_subplot(num_rows,num_columns,i + 1)
-    ax.imshow(samples[seed_number + i].reshape(48,48), cmap='gray')
-    ax.title.set_text(hardcoded_labels[i])
-
-
-# ### Frequency of Expressions
-# 
-# The distribution of how many times each expression appears in the dataset is important to inform what metrics are suitable for assessing the classifier. Below a bar graph showing the relative frequencies of each expression is shown.
-
-# In[9]:
-
-frequency_list = np.zeros(7)
-for label in labels:
-    frequency_list[int(label)] += 1
-    
-# Parse the numbers that correspond to different emotions in the dataset
-emotion_indices = range(1,8)
-x_axis_labels = ['Angry','Disgust','Fear','Happy','Sad','Surprise', 'Neutral']
-
-bar = plt.bar(emotion_indices, frequency_list, align='center')
-plt.xticks(emotion_indices, x_axis_labels )
-plt.xlabel("Facial Expression")
-plt.ylabel("Frequency of Occurence")
-plt.show()
-
-
 # In[10]:
 
 train_tensors = df_to_nparray(X_train,48).astype('float32')/255
@@ -249,6 +215,9 @@ def get_model_accuracy(input_model, input_test_tensors, input_test_targets):
 
 def plot_model_history(history, save_file = None):
     # CODE OBTAINED FROM https://machinelearningmastery.com/display-deep-learning-model-training-history-in-keras/
+
+    """
+    Ignore for now
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.legend(['train', 'validation'], loc='upper left')
@@ -258,7 +227,8 @@ def plot_model_history(history, save_file = None):
     plt.show()
     
     if save_file is not None:
-        savefig(save_file)
+        plt.savefig(save_file)
+   """
 
 
 # In[17]:
@@ -420,7 +390,7 @@ print("Test accuracy: %.4f%% " % get_model_accuracy(model, test_tensors, test_ta
 
 #print(history_advanced.history.keys())
 # summarize history for accuracy
-plot_model_history(history_advanced)
+plot_model_history(history_advanced, save_file = "advanced.png")
 
 
 # In[36]:
@@ -531,12 +501,12 @@ model_final.load_weights('saved_models/weights.best.transfer_example_six.hdf5')
 # In[45]:
 
 #print(history_transfer.history.keys())
-plot_model_history(history_transfer)
+plot_model_history(history_transfer, save_file = "transfer.png")
 
 
 # In[46]:
 
-print('Test accuracy: %.4f%%' % get_model_accuracy(model_final, test_tensors_transf, test_targets_transf)))
+print('Test accuracy: %.4f%%' % get_model_accuracy(model_final, test_tensors_transf, test_targets_transf))
 
 
 # In[47]:
