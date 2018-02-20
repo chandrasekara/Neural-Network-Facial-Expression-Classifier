@@ -6,4 +6,4 @@ The 'guided' folder contains a collection of projects that were completed by usi
 
 The 'capstone' folder contains a project completed completely from scratch by myself, and was completed to demonstrate the level of machine learning skill I had developed throughout the course. This project was built using Python 3.
 
-The majority of code for each of the projects exists within Jupyter notebooks. In order to run the code, Jupyter must first be installed. This can be done by [installing Anaconda](https://www.anaconda.com/download/) (recommended) or through pip by using: `pip3 install jupyter`
+Jupyter Notebooks are used extensively for organization and display of Python code. In order to view these, use: `jupyter notebook NOTEBOOKNAME.ipynb`
