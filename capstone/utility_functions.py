@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# Written by Dhilan Chandrasekara, 2018
+
+
 def dataframe_to_nparray(df_in, im_dim, reshape=True, triple_channels=False, horizontal_flip_double=False):
     
     # Convert a dataframe into a numpy array, suitably shaped for input to a CNN
@@ -32,6 +35,8 @@ def dataframe_to_nparray(df_in, im_dim, reshape=True, triple_channels=False, hor
     else:
         return np_array
 
+
+
 def indiv_cce(predictions_vector, targets_vector, epsilon_ = 0.0001):
     
     # Calculates, for a single sample, the contribution to the total categorical cross entropy of the predictions with respect to the targets
@@ -44,6 +49,8 @@ def indiv_cce(predictions_vector, targets_vector, epsilon_ = 0.0001):
     log_vector = -np.log(predictions_vector)
     
     return targets.dot(log_vector)
+
+
 
 def manual_total_cce(predictions, targets ):
     
@@ -58,10 +65,14 @@ def manual_total_cce(predictions, targets ):
     
     return float(total)/predictions.shape[0]
 
+
+
 def get_model_predictions(input_model, input_test_tensors):
     
     # Evaluate what facial expressions the model predicts for each test image
     return [input_model.predict(np.expand_dims(tensor, axis=0)) for tensor in input_test_tensors]
+
+
 
 def get_model_accuracy(input_model, input_test_tensors, input_test_targets):
     
@@ -70,7 +81,10 @@ def get_model_accuracy(input_model, input_test_tensors, input_test_targets):
     
     return test_accuracy
 
+
+
 def plot_model_history(history, save_file = None):
+
     # CODE OBTAINED FROM https://machinelearningmastery.com/display-deep-learning-model-training-history-in-keras/
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
@@ -83,7 +97,10 @@ def plot_model_history(history, save_file = None):
     #if save_file is not None:
     #    savefig(save_file)
 
+    
+
 def get_predictions_tensor(model, test_tensors):
+
     # Get model predictions and store them in an appropriately sized numpy array
     raw_predictions = get_model_predictions(model, test_tensors)
     dummy_array = np.array(raw_predictions)
